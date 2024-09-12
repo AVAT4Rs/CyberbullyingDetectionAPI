@@ -5,30 +5,98 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CyberbullyingDetectionAPI</title>
     <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        /* Simple spinner style */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1); /* Light grey */
+            border-radius: 50%;
+            border-top: 4px solid #007BFF; /* Blue color */
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Loading bar style */
+        .loading-bar {
+            width: 100%;
+            background-color: #f3f3f3;
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+            height: 8px;
+            margin: 20px auto;
+        }
+
+        .loading-bar span {
+            display: block;
+            height: 100%;
+            background-color: #007BFF;
+            width: 0%;
+            animation: load 2s infinite;
+        }
+
+        @keyframes load {
+            0% { width: 0%; }
+            50% { width: 50%; }
+            100% { width: 100%; }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <h1>CyberbullyingDetectionAPI</h1>
+        <p><b>Real-Time Cyberbullying Detection for Safer Instagram Communities.</b></p>
         <br>
+        
         <form id="linkForm">
             <input type="text" id="linkInput" name="link" placeholder="Enter the link" required>
             <button type="submit" id="submitButton">Analyze</button>
         </form>
         <div id="results" style="margin-top: 20px;"></div>
+        <div id="loading" class="spinner" style="display: none;"></div>
+        <br>
+        
+        <div id="Instructions">
+            
+        <hr>
+        <br>
+            <h2 style="text-align: left;margin-left: 20px;">How to Use the API?</h2>
+            <ol style="text-align: left;">
+                <li style="padding-bottom: 10px;"><strong>Provide the Instagram Post Link:</strong> Enter the URL of the Instagram post you want to analyze in the input field.</li>
+                <li style="padding-bottom: 10px;"><strong>Submit the Link:</strong> Click the "Analyze" button to send the link for processing.</li>
+                <li><strong>View the Results:</strong> After a brief analysis, the API will return detailed insights on cyberbullying comments, including counts by category and information on individual comments.</li>
+            </ol>
+
+            <br>
+            <p>Check out the API documentation. <a href="./docs">See Docs</a></p>
+        </div>
+
+        
     </div>
     
     <script>
         const form = document.getElementById('linkForm');
         const submitButton = document.getElementById('submitButton');
+        const instructionDiv = document.getElementById("Instructions");
         const resultsDiv = document.getElementById('results');
+        const loadingSpinner = document.getElementById('loading');
+        // const loadingBar = document.getElementById('loadingBar');
         
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            // Disable the button
+            // Disable the button and show the spinner
             submitButton.disabled = true;
             submitButton.style.backgroundColor = 'grey';
             submitButton.textContent = 'Analyzing...';
+            loadingSpinner.style.display = 'block';
+            // loadingBar.style.display = 'block';
             
             const formData = new FormData(form);
 
@@ -44,6 +112,7 @@
                 if (response.ok) {
                     // Display the counts first
                     const counts = result.counts;
+                    instructionDiv.style.display='none';
                     resultsDiv.innerHTML = `
                         <h2>Analysis Results:</h2>
                         <p><strong>Not Bullying:</strong> ${counts.not_bullying}</p>
@@ -56,15 +125,16 @@
                     `;
                         
                     // Display any 10 comments
-                    resultsDiv.innerHTML += `<h3>Top 10 Comments:</h3>`;
+                    resultsDiv.innerHTML += `<h2>Top 10 Comments:</h2>`;
                     result.predictions.slice(0, 10).forEach(entry => {
                         resultsDiv.innerHTML += `
-                            <div>
-                                <strong>User:</strong> ${entry.user}<br>
-                                <strong>Comment:</strong> ${entry.text}<br>
-                                <strong>Sentiment:</strong> ${entry.sentiment.join(', ')}
+                            <div class="comment-card">
+                                <div class="comment-details">
+                                    <strong style="color:black">User:</strong><span>${entry.user}</span>
+                                    <strong style="color:black">Comment:</strong>${entry.text}
+                                    <h3 style="text-align: center">Detected: ${entry.sentiment.join(', ')}</h3>
+                                </div>
                             </div>
-                            <hr>
                         `;
                     });
                 } else {
@@ -73,7 +143,9 @@
             } catch (error) {
                 resultsDiv.innerHTML = '<p>Error connecting to the server. Please try again later.</p>';
             } finally {
-                // Enable the button after processing
+                // Hide the spinner and enable the button after processing
+                loadingSpinner.style.display = 'none';
+                // loadingBar.style.display = 'none';
                 submitButton.disabled = false;
                 submitButton.style.backgroundColor = '#007BFF';
                 submitButton.textContent = 'Analyze';

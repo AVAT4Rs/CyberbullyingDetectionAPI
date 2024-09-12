@@ -51,7 +51,7 @@ async def root(link: str = Form(...)):
     data = []
     comments = []
     for i, comment in enumerate(post.get_comments()):
-        if i >= 100:
+        if i > 150:
             break
         data.append({"username": comment.owner.username,"text":comment.text})
         
