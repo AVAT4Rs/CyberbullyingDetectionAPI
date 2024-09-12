@@ -36,7 +36,7 @@ async def root(link: str = Form(...)):
     else:
         # Login and save session if it does not exist
         try:
-            L.login(user="chatlakanhaiya", passwd="Helloworld@12")
+            L.login(user=username, passwd=password)
             L.save_session_to_file()
         except Exception as e:
             print(e)
